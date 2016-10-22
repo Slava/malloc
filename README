@@ -50,8 +50,6 @@ $ ./mdriver -v
 $ ./mdriver -V
       print more details
 
-We've also 
-
 
 === Traces ===
 The traces are simple text files encoding a series of memory allocations, deallocations, and
@@ -88,6 +86,7 @@ $ ./mdriver.py --trace-file=traces/trace_c0_v0
       run one trace file
 $ ./mdriver.py --trace-dir=additional_traces/
       run the trace files in a trace directory
+
 
 === OpenTuner ===
 OpenTuner is a general autotuning framework. If you choose to use it, then it will help your
