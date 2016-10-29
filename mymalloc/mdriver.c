@@ -74,6 +74,7 @@ static void usage(void);
  * Main routine
  **************/
 int main(int argc, char **argv) {
+  printf("running...\n");
 #ifdef GET_RUNNINGTIME
   fasttime_t begin = gettime();
 #endif

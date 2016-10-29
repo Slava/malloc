@@ -30,7 +30,7 @@ void list_print(list_t **root) {
   int cnt = 10;
   while (cur && cnt > 0) {
     cnt--;
-    dprintf("-->%zu", cur->id);
+    dprintf("-->%zu (%p)", cur->id, cur);
     cur = cur->next;
   }
   if (cnt == 0) {
@@ -40,17 +40,24 @@ void list_print(list_t **root) {
 }
 
 void list_erase(list_t **root, list_t *node) {
+  list_t *p = NULL;
+  list_t **prevpp = root;
+
   dprintf("\n");
   dprintf("erasing %zu\n", node->id);
-  list_t **cur = root; // be careful: node might be the root
-  while (*cur) {
-    if (*cur == node) {
-      *cur = node->next;
-      return;
-    } else {
-      cur = &((*cur)->next);
+  // Iterate the linked list until you find the range with a matching lo
+  // payload and remove it.  Remember to properly handle the case where the
+  // payload is in the first node, and to free the node after unlinking it.
+  p = *prevpp;
+  while (p) {
+    if (p == node) {
+      *prevpp = p->next;
+      break;
     }
+    prevpp = &p->next;
+    p = p->next;
   }
+
   D(list_print(root));
 }
 
