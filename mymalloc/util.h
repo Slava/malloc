@@ -1,4 +1,4 @@
-#ifdef DEBUG
+#ifdef VERBOSE
 #define D(x) x
 #define dprintf printf
 #else
@@ -6,11 +6,16 @@
 #define dprintf(...)
 #endif
 
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+
 typedef struct list_t {
   size_t size;
   D(size_t id;)
   struct list_t* next;
 } list_t;
+
+#define LIST_T_SIZE (sizeof(list_t))
 
 void list_print(list_t **root) {
   list_t *cur = *root;

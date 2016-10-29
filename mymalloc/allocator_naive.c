@@ -77,6 +77,11 @@ void * my_brk(size_t size) {
   } else {
     p = (void*) ret;
     list_erase(&free_list, ret);
+    if (ret->size > size) {
+      list_t *node = (list_t *)(p + size);
+      node->size = ret->size - size;
+      //list_append(&free_list, node);
+    }
   }
   return p;
 }
@@ -87,7 +92,8 @@ void * my_malloc(size_t size) {
   // We allocate a little bit of extra memory so that we can store the
   // size of the block we've allocated.  Take a look at realloc to see
   // one example of a place where this can come in handy.
-  size_t aligned_size = ALIGN(size + SIZE_T_SIZE);
+  size_t size_needed = max(size + SIZE_T_SIZE, LIST_T_SIZE);
+  size_t aligned_size = ALIGN(size_needed);
 
   // Expands the heap by the given number of bytes and returns a pointer to
   // the newly-allocated area.  This is a slow call, so you will want to
