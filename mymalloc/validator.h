@@ -33,8 +33,8 @@
 
 // Records the extent of each block's payload
 typedef struct range_t {
-  char *lo;              // low payload address
-  char *hi;              // high payload address
+  void *lo;              // low payload address
+  void *hi;              // high payload address
   struct range_t *next;  // next list element
 } range_t;
 
@@ -48,9 +48,9 @@ typedef struct range_t {
 // size bytes at addr lo. After checking the block for correctness,
 // we create a range struct for this block and add it to the range list.
 static int add_range(const malloc_impl_t *impl,
-                     range_t **ranges, char *lo, int size,
+                     range_t **ranges, void *lo, int size,
                      int tracenum, int opnum) {
-  char *hi = lo + size - 1;
+  void *hi = lo + size - 1;
   range_t *p = NULL;
 
   // You can use this as a buffer for writing messages with sprintf.
@@ -60,10 +60,11 @@ static int add_range(const malloc_impl_t *impl,
 
   // Payload addresses must be R_ALIGNMENT-byte aligned
   assert(IS_ALIGNED(lo));
-  // assert(IS_ALIGNED(hi)); // is this necessary?
+  // assert(IS_ALIGNED(hi + 1)); // is this necessary?
 
   // The payload must lie within the extent of the heap
-  assert(lo >= mem_heap_lo() && hi < mem_heap_hi());
+  assert(lo >= mem_heap_lo());
+  assert(hi <= mem_heap_hi());
 
   // The payload must not overlap any other payloads
   range_t *ri = *ranges;
@@ -85,7 +86,7 @@ static int add_range(const malloc_impl_t *impl,
 }
 
 // remove_range - Free the range record of block whose payload starts at lo
-static void remove_range(range_t **ranges, char *lo) {
+static void remove_range(range_t **ranges, void *lo) {
   range_t *p = NULL;
   range_t **prevpp = ranges;
 
@@ -122,9 +123,9 @@ int eval_mm_valid(const malloc_impl_t *impl, trace_t *trace, int tracenum) {
   int index = 0;
   int size = 0;
   int oldsize = 0;
-  char *newp = NULL;
-  char *oldp = NULL;
-  char *p = NULL;
+  void *newp = NULL;
+  void *oldp = NULL;
+  void *p = NULL;
   range_t *ranges = NULL;
 
   // Reset the heap.
@@ -145,7 +146,7 @@ int eval_mm_valid(const malloc_impl_t *impl, trace_t *trace, int tracenum) {
       case ALLOC:  // malloc
 
         // Call the student's malloc
-        if ((p = (char *) impl->malloc(size)) == NULL) {
+        if ((p = (void *) impl->malloc(size)) == NULL) {
           malloc_error(tracenum, i, "impl malloc failed.");
           return 0;
         }
@@ -169,7 +170,7 @@ int eval_mm_valid(const malloc_impl_t *impl, trace_t *trace, int tracenum) {
 
         // Call the student's realloc
         oldp = trace->blocks[index];
-        if ((newp = (char *) impl->realloc(oldp, size)) == NULL) {
+        if ((newp = (void *) impl->realloc(oldp, size)) == NULL) {
           malloc_error(tracenum, i, "impl realloc failed.");
           return 0;
         }
