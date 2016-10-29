@@ -27,16 +27,15 @@ HEADERS := \
 OBJS := \
 	memlib.o
 
+
 MDRIVER_OBJS:= \
-	allocator.o \
 	bad_allocator.o \
 	clock.o \
 	fcyc.o \
 	fsecs.o \
 	ftimer.o \
 	libc_allocator.o \
-	mdriver.o
-
+	mdriver.o \
 
 # Blank line ends list.
 
@@ -64,8 +63,13 @@ all: $(TARGETS)
 pintool:
 	$(MAKE) -C pintool
 
-mdriver: $(OBJS) $(MDRIVER_OBJS)
-	$(CC) $(PARAMS) $(LDFLAGS) $(OBJS) $(MDRIVER_OBJS) -o $@
+DEFAULT_OBJ := allocator.o
+mdriver: $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS)
+	$(CC) $(PARAMS) $(LDFLAGS) $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
+
+NAIVE_OBJ := allocator_naive.o
+naive: $(NAIVE_OBJ) $(OBJS) $(MDRIVER_OBJS)
+	$(CC) $(PARAMS) $(LDFLAGS) $(NAIVE_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
 # compile objects
 
