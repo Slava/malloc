@@ -47,10 +47,11 @@ typedef struct range_t {
 // we've just called the student's malloc to allocate a block of
 // size bytes at addr lo. After checking the block for correctness,
 // we create a range struct for this block and add it to the range list.
-static int add_range(const malloc_impl_t *impl, range_t **ranges, char *lo,
-    int size, int tracenum, int opnum) {
-  //  char *hi = lo + size - 1;
-  //  range_t *p = NULL;
+static int add_range(const malloc_impl_t *impl,
+                     range_t **ranges, char *lo, int size,
+                     int tracenum, int opnum) {
+  char *hi = lo + size - 1;
+  range_t *p = NULL;
 
   // You can use this as a buffer for writing messages with sprintf.
   // char msg[MAXLINE];
@@ -58,30 +59,49 @@ static int add_range(const malloc_impl_t *impl, range_t **ranges, char *lo,
   assert(size > 0);
 
   // Payload addresses must be R_ALIGNMENT-byte aligned
-  // TODO(project3): YOUR CODE HERE
+  assert(IS_ALIGNED(lo));
+  // assert(IS_ALIGNED(hi)); // is this necessary?
 
   // The payload must lie within the extent of the heap
-  // TODO(project3): YOUR CODE HERE
+  assert(lo >= mem_heap_lo() && hi < mem_heap_hi());
 
   // The payload must not overlap any other payloads
-  // TODO(project3): YOUR CODE HERE
+  range_t *ri = *ranges;
+  while (ri) {
+    assert (!(lo >= ri->lo && lo <= ri->hi) &&
+            !(hi >= ri->lo && hi <= ri->hi));
+    ri = ri->next;
+  }
 
   // Everything looks OK, so remember the extent of this block by creating a
   // range struct and adding it the range list.
-  // TODO(project3):  YOUR CODE HERE
+  p = malloc(sizeof(range_t));
+  p->hi = hi;
+  p->low = low;
+  p->next = *ranges;
+  *ranges = p;
 
   return 1;
 }
 
 // remove_range - Free the range record of block whose payload starts at lo
 static void remove_range(range_t **ranges, char *lo) {
-  //  range_t *p = NULL;
-  //  range_t **prevpp = ranges;
+  range_t *p = NULL;
+  range_t **prevpp = ranges;
 
   // Iterate the linked list until you find the range with a matching lo
   // payload and remove it.  Remember to properly handle the case where the
   // payload is in the first node, and to free the node after unlinking it.
-  // TODO(project3): YOUR CODE HERE
+  p = *ranges;
+  while (p) {
+    if (p->lo == lo) {
+      *prevpp = p->next;
+      free(p);
+      return;
+    }
+    prevpp = &p->next;
+    p = p->next;
+  }
 }
 
 // clear_ranges - free all of the range records for a trace
