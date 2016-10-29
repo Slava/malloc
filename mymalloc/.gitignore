@@ -1,6 +1,7 @@
+mdriver
 naive
 coalesce
-mdriver
+fast
 *.o
 .cflags
 
