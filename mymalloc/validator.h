@@ -77,7 +77,7 @@ static int add_range(const malloc_impl_t *impl,
   // range struct and adding it the range list.
   p = malloc(sizeof(range_t));
   p->hi = hi;
-  p->low = low;
+  p->lo = lo;
   p->next = *ranges;
   *ranges = p;
 
