@@ -52,6 +52,7 @@ int my_check() {
 // calls are made.  Since this is a very simple implementation, we just
 // return success.
 int my_init() {
+  dprintf("init.\n--------------------\n\n");
   free_list = NULL;
   return 0;
 }
