@@ -77,10 +77,10 @@ void * my_brk(size_t size) {
   } else {
     p = (void*) ret;
     list_erase(&free_list, ret);
-    if (ret->size > size) {
+    if (ret->size >= size + LIST_T_SIZE) {
       list_t *node = (list_t *)(p + size);
       node->size = ret->size - size;
-      //list_append(&free_list, node);
+      list_append(&free_list, node);
     }
   }
   return p;
