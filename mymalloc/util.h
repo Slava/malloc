@@ -43,8 +43,6 @@ void list_erase(list_t **root, list_t *node) {
   list_t *p = NULL;
   list_t **prevpp = root;
 
-  dprintf("\n");
-  dprintf("erasing %zu\n", node->id);
   // Iterate the linked list until you find the range with a matching lo
   // payload and remove it.  Remember to properly handle the case where the
   // payload is in the first node, and to free the node after unlinking it.
@@ -57,17 +55,16 @@ void list_erase(list_t **root, list_t *node) {
     prevpp = &p->next;
     p = p->next;
   }
-
-  D(list_print(root));
 }
 
-D(size_t id = 0);
+D(
+size_t id_cnt = 0;
+int nxt_id() {
+  return id_cnt++;
+})
+
 void list_append(list_t **root, list_t *node) {
-  D(node->id = id++);
-  dprintf("\n");
-  dprintf("appending %zu\n", node->id);
   node->next = *root;
   *root = node;
-  D(list_print(root));
 }
 
