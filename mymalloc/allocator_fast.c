@@ -23,10 +23,6 @@ const size_t THRES[] = {250, 1000, 4000, 16000, 1 << 30};
 
 void *heap_lo, *heap_hi;
 
-static inline size_t get_bkt_thres(int idx) {
-  return THRES[idx / NUM_BKT_DIV];
-}
-
 static inline int get_bkt_idx(list_t *p) {
   size_t a = p->size;
   size_t b = (size_t) p;
@@ -83,7 +79,6 @@ static inline void * my_brk(size_t size) {
     for(size_t idx = _idx * NUM_BKT_DIV; idx < _idx * NUM_BKT_DIV + NUM_BKT_DIV; ++idx) {
       cur = free_lists[idx];
       while (cur) {
-        //printf("size: %zu\n", cur->size);
         if (cur->size >= size) {
           if (!ret || cur->size < ret->size) {
             ret = cur;
