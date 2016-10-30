@@ -503,9 +503,6 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
   char *p;
   char *newp, *oldp;
 
-  double U_numerator, U_denominator, U;
-  double peak_U = 1; // peak util: min U_numerator/U_denominator over time
-
   /* initialize the heap and the mm malloc package */
   mem_reset_brk();
   if (impl->init() < 0) {
@@ -576,15 +573,13 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
       default:
         app_error("Nonexistent request type in eval_mm_util");
     }
-
-    U_numerator = (double)((max_total_size > MEM_ALLOWANCE) ? max_total_size : MEM_ALLOWANCE);
-    heap_size = mem_heapsize();
-    U_denominator = (double)(heap_size > MEM_ALLOWANCE ? heap_size: MEM_ALLOWANCE);
-    U = (double)U_numerator / (double)U_denominator;
-    peak_U = (U < peak_U) ? U : peak_U;
   }
-
-  return peak_U;
+  max_total_size = (max_total_size > MEM_ALLOWANCE) ?
+    max_total_size : MEM_ALLOWANCE;
+  heap_size = mem_heapsize();
+  heap_size = (heap_size > MEM_ALLOWANCE) ?
+    heap_size : MEM_ALLOWANCE;
+  return ((double)max_total_size / (double)heap_size);
 }
 
 static void mem_op(volatile char *raddr, volatile char *waddr) {
