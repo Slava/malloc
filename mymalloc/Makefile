@@ -8,6 +8,10 @@ LDFLAGS := -lpthread	# TODO: do we need this?
 # Macros defined by the user or OpenTuner
 PARAMS :=
 
+ifeq ($(EXP),1)
+	CFLAGS += -DEXP
+endif
+
 ifeq ($(GETTIME),1)
   CFLAGS += -DGET_RUNNINGTIME
 endif
