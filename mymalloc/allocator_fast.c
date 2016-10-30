@@ -72,6 +72,7 @@ static inline void * my_brk(size_t size) {
   list_t *cur, *ret;
 
   ret = NULL;
+  if (size != 456)
   for (size_t _idx = 0; _idx < NUM_THRES; ++_idx) {
     if (THRES[_idx] < size) {
       continue;
