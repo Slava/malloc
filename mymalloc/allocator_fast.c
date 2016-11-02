@@ -6,6 +6,7 @@
 #include "./allocator_interface.h"
 #include "./memlib.h"
 #include "./utilfast.h"
+#include "./sampler.c"
 
 #define malloc(...) (USE_MY_MALLOC)
 #define free(...) (USE_MY_FREE)
@@ -56,6 +57,11 @@ int my_check() {
   return 0;
 }
 
+void sample_finished(int *bins, int size) {
+  // TODO do something smart;
+  printf("sampling finished %d\n", size);
+}
+
 int my_init() {
   heap_lo = mem_heap_lo();
   heap_hi = mem_heap_hi() + 1;
@@ -64,6 +70,9 @@ int my_init() {
   for (size_t i = 0; i < NUM_FREE_LISTS; ++i) {
     free_lists[i] = NULL;
   }
+
+  init_samples();
+  register_sampling_cb(&sample_finished);
   return 0;
 }
 
@@ -123,6 +132,7 @@ static inline void * my_brk(size_t size) {
 void * my_malloc(size_t size) {
   // we need to be able to store SIZE_T + the current block.
   // in addition, because a list_t needs to have its end marked the size also needs to be LIST_T_SIZE + SIZE_T_SIZE for us to be able to eventually free and reuse the space.
+  add_sample(size);
   size_t size_needed = max(size + SIZE_T_SIZE, LIST_T_SIZE + SIZE_T_SIZE);
   size_t aligned_size = ALIGN(size_needed);
 
@@ -341,4 +351,16 @@ void * my_heap_lo() {
 
 void * my_heap_hi() {
   return mem_heap_hi();
+}
+
+void my_dump_state() {
+  printf("// Printing state\n");
+  for (int i = 0; i < NUM_FREE_LISTS; i++) {
+    list_t *l = free_lists[i];
+    while (l) {
+      printf("%zu %zu\n", (size_t)l, l->size);
+      l = l->next;
+    }
+  }
+  printf("\n");
 }

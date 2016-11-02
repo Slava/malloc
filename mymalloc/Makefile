@@ -84,7 +84,7 @@ coalesce: $(COALESCE_OBJ) $(OBJS) $(MDRIVER_OBJS)
 	$(CC) $(PARAMS) $(LDFLAGS) $(COALESCE_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
 FAST_OBJ := allocator_fast.o
-fast: $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS)
+fast: $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) sampler.c
 	$(CC) $(PARAMS) $(LDFLAGS) $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
 # compile objects

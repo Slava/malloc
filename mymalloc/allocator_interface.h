@@ -39,6 +39,7 @@ typedef struct {
   void (*reset_brk)(void);
   void *(*heap_lo)(void);
   void *(*heap_hi)(void);
+  void (*dump_state)(void);
 } malloc_impl_t;
 
 int libc_init();
@@ -49,11 +50,12 @@ int libc_check();
 void libc_reset_brk();
 void * libc_heap_lo();
 void * libc_heap_hi();
+void libc_dump_state();
 
 static const malloc_impl_t libc_impl =
 { .init = &libc_init, .malloc = &libc_malloc, .realloc = &libc_realloc,
   .free = &libc_free, .check = &libc_check, .reset_brk = &libc_reset_brk,
-  .heap_lo = &libc_heap_lo, .heap_hi = &libc_heap_hi};
+  .heap_lo = &libc_heap_lo, .heap_hi = &libc_heap_hi, .dump_state = &libc_dump_state };
 
 int my_init();
 void * my_malloc(size_t size);
@@ -63,11 +65,12 @@ int my_check();
 void my_reset_brk();
 void * my_heap_lo();
 void * my_heap_hi();
+void my_dump_state();
 
 static const malloc_impl_t my_impl =
 { .init = &my_init, .malloc = &my_malloc, .realloc = &my_realloc,
   .free = &my_free, .check = &my_check, .reset_brk = &my_reset_brk,
-  .heap_lo = &my_heap_lo, .heap_hi = &my_heap_hi};
+  .heap_lo = &my_heap_lo, .heap_hi = &my_heap_hi, .dump_state = &my_dump_state };
 
 int bad_init();
 void * bad_malloc(size_t size);
@@ -81,6 +84,6 @@ void * bad_heap_hi();
 static const malloc_impl_t bad_impl =
 { .init = &bad_init, .malloc = &bad_malloc, .realloc = &bad_realloc,
   .free = &bad_free, .check = &bad_check, .reset_brk = &bad_reset_brk,
-  .heap_lo = &bad_heap_lo, .heap_hi = &bad_heap_hi};
+  .heap_lo = &bad_heap_lo, .heap_hi = &bad_heap_hi, .dump_state = &libc_dump_state };
 
 #endif  // _ALLOCATOR_INTERFACE_H

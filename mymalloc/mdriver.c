@@ -454,6 +454,9 @@ static trace_t *read_trace(char *tracedir, char *filename) {
         trace->ops[op_index].index = index;
         trace->ops[op_index].size = size;
         break;
+      case 'd':
+        trace->ops[op_index].type = DUMP;
+        break;
       default:
         printf("Bogus type character (%c) in tracefile %s\n",
                type[0], path);
@@ -569,6 +572,9 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
 
       case WRITE: /* write */
         break;
+      case DUMP:
+        impl->dump_state();
+        break;
 
       default:
         app_error("Nonexistent request type in eval_mm_util");
@@ -637,6 +643,8 @@ static void eval_mm_speed(const malloc_impl_t *impl, trace_t *trace) {
           }
         }
         break;
+      case DUMP:
+        break;
 
       default:
         app_error("Nonexistent request type in eval_mm_speed");
@@ -688,6 +696,8 @@ static int eval_mm_check(const malloc_impl_t *impl, trace_t *trace, int tracenum
         break;
 
       case WRITE: /* write */
+        break;
+      case DUMP:
         break;
 
       default:

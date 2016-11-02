@@ -61,3 +61,5 @@ void * libc_realloc(void *ptr, size_t size) {
 void libc_free(void *ptr) {
   free(ptr);
 }
+
+void libc_dump_state() {}

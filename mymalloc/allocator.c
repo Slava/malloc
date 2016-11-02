@@ -156,3 +156,5 @@ void * my_heap_lo() {
 void * my_heap_hi() {
   return mem_heap_hi();
 }
+
+void my_dump_state() {}

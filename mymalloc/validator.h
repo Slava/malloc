@@ -207,6 +207,9 @@ int eval_mm_valid(const malloc_impl_t *impl, trace_t *trace, int tracenum) {
 
         break;
 
+      case DUMP:
+        break;
+
       default:
         app_error("Nonexistent request type in eval_mm_valid");
     }
@@ -219,4 +222,5 @@ int eval_mm_valid(const malloc_impl_t *impl, trace_t *trace, int tracenum) {
   // As far as we know, this is a valid malloc package
   return 1;
 }
+
 #endif  // MM_VALIDATOR_H

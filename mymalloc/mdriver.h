@@ -47,7 +47,7 @@
 #define HDRLINES       4 /* number of header lines in a trace file */
 #define LINENUM(i) (i+5) /* cnvt trace request nums to linenums (origin 1) */
 
-typedef enum {ALLOC, FREE, REALLOC, WRITE} traceop_type; /* type of request */
+typedef enum {ALLOC, FREE, REALLOC, WRITE, DUMP} traceop_type; /* type of request */
 /******************************
  * The key compound data types
  *****************************/
