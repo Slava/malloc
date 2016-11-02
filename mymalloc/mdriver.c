@@ -70,6 +70,7 @@ static int eval_mm_check(const malloc_impl_t *impl, trace_t *trace, int tracenum
 static void printresults(int n, char **tracefiles, stats_t *stats);
 static void usage(void);
 
+
 /**************
  * Main routine
  **************/

@@ -354,13 +354,19 @@ void * my_heap_hi() {
 }
 
 void my_dump_state() {
-  printf("// Printing state\n");
+  FILE *fout = fopen("dump.out", "a");
+  fprintf(fout, "{\n");
+  //printf("line_no: %zu\n", line_no);
+  fprintf(fout, "total_width: %zu,\n", heap_hi - heap_lo);
+  fprintf(fout, "frees: [\n");
   for (int i = 0; i < NUM_FREE_LISTS; i++) {
     list_t *l = free_lists[i];
     while (l) {
-      printf("%zu %zu\n", (size_t)l, l->size);
+      fprintf(fout, "  {\n    position: %zu,\n    width:%zu,\n  },\n", (size_t)((void*)l - heap_lo), l->size);
       l = l->next;
     }
   }
-  printf("\n");
+  fprintf(fout, "],\n");
+  fprintf(fout, "},\n");
+  fclose(fout);
 }
