@@ -1,45 +1,45 @@
-var frames = dump.map(function(obj) {
-  var ret = [];
+var mydump = dump;
+//var full = false;
+var full = true;
+if (!full) {
+  mydump = mydump.slice(0, 10);
+}
+var frames = mydump.map(function(obj) {
+  var blocks = [];
   var curpos = 0;
   obj.frees.sort(function(a, b) {
     return a.position - b.position;
   });
   obj.frees.forEach(function(blockObj) {
-    ret.push({
+    blocks.push({
       free: false,
       width: blockObj.position - curpos,
     });
-    ret.push({
+    blocks.push({
       free: true,
       width: blockObj.width,
     });
     curpos = blockObj.position + blockObj.width;
   });
 
-  ret.push({
+  blocks.push({
     free: false,
     width: obj.total_width - curpos,
   });
 
+  var ret = {};
+  ret.blocks = blocks;
+  ret.orig = obj.orig;
   return ret;
 });
 
 window.setFrame = function () {}
 
-document.getElementById('mySelect').innerHTML = dump.map(function (obj) {
-  return '<option onclick="window.setFrame(mySelect.selectedIndex)">' + obj.orig + '</option>';
-}).join('\n');
-
 var Main = {
   controller: function() {
-    console.trace('creating controller');
-    var frame = 0;
-    window.setFrame = function (i) {
-      frame = i;
-      m.redraw(true);
-    }
     var resolution = 800;
     var fixedResolution = m.prop(false);
+    var frame = m.prop(0);
     function computeResolution(blocks) {
       var totalWidth = 0;
       blocks.forEach(function(block) {
@@ -51,25 +51,22 @@ var Main = {
       return rnd;
     }
 
-    this.blocks = function() {
-      console.log('fixedResolution', fixedResolution());
+    var getBlocks = function() {
       if (!fixedResolution()) {
-        resolution = computeResolution(frames[frame]);
+        resolution = computeResolution(frames[frame()].blocks);
       }
-      return frames[frame];
+      return frames[frame()].blocks;
     };
 
     var nextFrame = function() {
-      console.trace('nextFrame');
-      if (frame + 1 < frames.length) {
-        frame++;
+      if (frame() + 1 < frames.length) {
+        frame(frame() + 1);
       }
     };
 
     var prevFrame = function() {
-      console.trace('prevFrame');
-      if (frame - 1 >= 0) {
-        frame--;
+      if (frame() - 1 >= 0) {
+        frame(frame() - 1 );
       }
     };
 
@@ -77,13 +74,16 @@ var Main = {
     window.prevFrame = prevFrame;
     this.nextFrame = nextFrame;
     this.prevFrame = prevFrame;
-    this.frame = function() {
-      return frame;
-    };
+    this.blocks = getBlocks;
+    this.frame = frame;
     this.resolution = function() {
       return resolution;
     };
     this.fixedResolution = fixedResolution;
+    this.keyboard = Keyboard({
+      'ArrowLeft': prevFrame,
+      'ArrowRight': nextFrame,
+    });
   },
 
   view: function(ctrl) {
@@ -107,7 +107,27 @@ var Main = {
       allBytes = allBytes.concat(drawBlock(block));
     });
 
-    return m('.root', [
+    return m('.root[tabindex=1', {
+      config: function(el) {
+        el.focus();
+      },
+      onblur: function() {
+        this.focus();
+      },
+      onkeyup: ctrl.keyboard.up,
+      onkeydown: ctrl.keyboard.down,
+    }, [
+      m('select[size=20]',{
+        selectedIndex: ctrl.frame(),
+        onchange: function() {
+          ctrl.frame(this.selectedIndex);
+        },
+        //onchange: m.withAttr('selectedIndex', ctrl.frame),
+      }, frames.map(function(obj, i) {
+        return m('option', {
+          onclick: function() { ctrl.frame(i); }
+        } , obj.orig);
+      })),
       m('div', [
         m('button', { onclick: ctrl.prevFrame, }, '<<<<'),
         m('button', { onclick: ctrl.nextFrame, }, '>>>>'),

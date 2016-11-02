@@ -12,6 +12,7 @@ Keyboard = function(keys) {
   var that = {};
   function make(val) { // make a event handler bound to val
     return function(ev) {
+      console.log(ev.key);
       if (ev.key in keys) {
         keys[ev.key](val); // call the callback
       }
