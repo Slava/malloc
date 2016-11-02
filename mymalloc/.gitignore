@@ -30,3 +30,6 @@ log.awsrun
 *.pyc
 opentuner.db
 opentuner.log
+
+# Visualizations
+dump.out

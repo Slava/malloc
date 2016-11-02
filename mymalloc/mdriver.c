@@ -13,6 +13,12 @@
 #include "./mdriver.h"
 #include "./validator.h"
 
+#ifdef RUN_VIS
+#define dump(...) {char buf[40]; sprintf(buf, __VA_ARGS__); impl->dump_state(buf);}
+#else
+#define dump(...)
+#endif
+
 #ifdef GET_RUNNINGTIME
 #include "./fasttime.h"
 #endif
@@ -534,6 +540,7 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
         /* Update statistics */
         max_total_size = (total_size > max_total_size) ?
             total_size : max_total_size;
+        dump("a %d %d", index, size);
         break;
 
       case REALLOC: /* realloc */
@@ -556,6 +563,7 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
         /* Update statistics */
         max_total_size = (total_size > max_total_size) ?
             total_size : max_total_size;
+        dump("r %d %d (%d)", index, newsize, oldsize);
         break;
 
       case FREE: /* free */
@@ -568,13 +576,15 @@ static double eval_mm_util(const malloc_impl_t *impl, trace_t *trace, int tracen
         /* Keep track of current total size
          * of all allocated blocks */
         total_size -= size;
+        dump("f %d (%d)", index, size);
 
         break;
 
       case WRITE: /* write */
+        dump("w");
         break;
       case DUMP:
-        impl->dump_state();
+        impl->dump_state("(none)");
         break;
 
       default:

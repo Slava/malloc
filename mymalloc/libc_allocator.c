@@ -62,4 +62,4 @@ void libc_free(void *ptr) {
   free(ptr);
 }
 
-void libc_dump_state() {}
+void libc_dump_state(char *str) {}

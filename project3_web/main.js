@@ -1,13 +1,10 @@
 var frames = dump.map(function(obj) {
-  //console.log('frame');
   var ret = [];
   var curpos = 0;
   obj.frees.sort(function(a, b) {
     return a.position - b.position;
   });
-  console.log('sorted', obj.frees);
   obj.frees.forEach(function(blockObj) {
-    //console.log('push', blockObj);
     ret.push({
       free: false,
       width: blockObj.position - curpos,
@@ -27,10 +24,20 @@ var frames = dump.map(function(obj) {
   return ret;
 });
 
+window.setFrame = function () {}
+
+document.getElementById('mySelect').innerHTML = dump.map(function (obj) {
+  return '<option onclick="window.setFrame(mySelect.selectedIndex)">' + obj.orig + '</option>';
+}).join('\n');
+
 var Main = {
   controller: function() {
     console.trace('creating controller');
     var frame = 0;
+    window.setFrame = function (i) {
+      frame = i;
+      m.redraw(true);
+    }
     this.blocks = function() {
       return frames[frame];
     };
@@ -59,7 +66,6 @@ var Main = {
   },
 
   view: function(ctrl) {
-    console.log('frame is ', ctrl.frame());
     function drawByte(free) {
       return m('.byte', {
         className: free ? 'green' : 'red',

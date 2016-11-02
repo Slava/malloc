@@ -39,7 +39,7 @@ typedef struct {
   void (*reset_brk)(void);
   void *(*heap_lo)(void);
   void *(*heap_hi)(void);
-  void (*dump_state)(void);
+  void (*dump_state)(char *str);
 } malloc_impl_t;
 
 int libc_init();
@@ -50,7 +50,7 @@ int libc_check();
 void libc_reset_brk();
 void * libc_heap_lo();
 void * libc_heap_hi();
-void libc_dump_state();
+void libc_dump_state(char *str);
 
 static const malloc_impl_t libc_impl =
 { .init = &libc_init, .malloc = &libc_malloc, .realloc = &libc_realloc,
@@ -65,7 +65,7 @@ int my_check();
 void my_reset_brk();
 void * my_heap_lo();
 void * my_heap_hi();
-void my_dump_state();
+void my_dump_state(char *str);
 
 static const malloc_impl_t my_impl =
 { .init = &my_init, .malloc = &my_malloc, .realloc = &my_realloc,

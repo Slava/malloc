@@ -353,7 +353,7 @@ void * my_heap_hi() {
   return mem_heap_hi();
 }
 
-void my_dump_state() {
+void my_dump_state(char *s) {
   FILE *fout = fopen("dump.out", "a");
   fprintf(fout, "{\n");
   //printf("line_no: %zu\n", line_no);
@@ -367,6 +367,7 @@ void my_dump_state() {
     }
   }
   fprintf(fout, "],\n");
+  fprintf(fout, "orig: \"%s\"", s);
   fprintf(fout, "},\n");
   fclose(fout);
 }
