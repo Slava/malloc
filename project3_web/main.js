@@ -30,7 +30,12 @@ var frames = mydump.map(function(obj) {
   var ret = {};
   ret.blocks = blocks;
   ret.orig = obj.orig;
+  ret.total_width = obj.total_width;
   return ret;
+});
+
+var jumpframes = U.range(frames.length).filter(function(i) {
+  return i == 0 || frames[i].total_width > frames[i - 1].total_width;
 });
 
 window.setFrame = function () {}
@@ -70,12 +75,28 @@ var Main = {
       }
     };
 
+    var jumpframe = function(idx) {
+      if (idx === undefined) { // getter
+        console.log('getter');
+        var r = 0;
+        jumpframes.forEach(function(i, j) {
+          if (i <= frame()) {
+            r = j;
+          }
+        });
+        return r;
+      } else { // setter
+        frame(jumpframes[idx]);
+      }
+    };
+
     window.nextFrame = nextFrame;
     window.prevFrame = prevFrame;
     this.nextFrame = nextFrame;
     this.prevFrame = prevFrame;
     this.blocks = getBlocks;
     this.frame = frame;
+    this.jumpframe = jumpframe;
     this.resolution = function() {
       return resolution;
     };
@@ -94,7 +115,7 @@ var Main = {
     }
 
     function drawBlock(block) {
-      var bytes = Math.floor(block.width / resolution);
+      var bytes = Math.ceil(block.width / resolution);
       return U.range(bytes).map(function() {
         return drawByte(block.free);
       });
@@ -128,6 +149,19 @@ var Main = {
           onclick: function() { ctrl.frame(i); }
         } , obj.orig);
       })),
+
+      m('select[size=20]',{
+        selectedIndex: ctrl.jumpframe(),
+        onchange: function() {
+          ctrl.jumpframe(this.selectedIndex);
+        },
+        //onchange: m.withAttr('selectedIndex', ctrl.frame),
+      }, jumpframes.map(function(i, j) {
+        return m('option', {
+          onclick: function() { ctrl.jumpframe(j); }
+        } , frames[i].orig + '(' + frames[i].total_width + ')');
+      })),
+
       m('div', [
         m('button', { onclick: ctrl.prevFrame, }, '<<<<'),
         m('button', { onclick: ctrl.nextFrame, }, '>>>>'),
@@ -139,6 +173,9 @@ var Main = {
           checked: ctrl.fixedResolution(),
           onclick: m.withAttr('checked', ctrl.fixedResolution),
         }),
+      ]),
+      m('div', [
+        m('span', 'Total width: ' + frames[ctrl.frame()].total_width),
       ]),
       m('bytes', allBytes),
     ]);
