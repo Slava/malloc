@@ -38,7 +38,24 @@ var Main = {
       frame = i;
       m.redraw(true);
     }
+    var resolution = 800;
+    var fixedResolution = m.prop(false);
+    function computeResolution(blocks) {
+      var totalWidth = 0;
+      blocks.forEach(function(block) {
+        totalWidth += block.width;
+      });
+      var opt = Math.floor(totalWidth / 200) + 1;
+      var rgran = 4;
+      var rnd = Math.pow(rgran, Math.floor(Math.log(opt) / Math.log(rgran)));
+      return rnd;
+    }
+
     this.blocks = function() {
+      console.log('fixedResolution', fixedResolution());
+      if (!fixedResolution()) {
+        resolution = computeResolution(frames[frame]);
+      }
       return frames[frame];
     };
 
@@ -63,6 +80,10 @@ var Main = {
     this.frame = function() {
       return frame;
     };
+    this.resolution = function() {
+      return resolution;
+    };
+    this.fixedResolution = fixedResolution;
   },
 
   view: function(ctrl) {
@@ -73,13 +94,14 @@ var Main = {
     }
 
     function drawBlock(block) {
-      var bytes = Math.floor(block.width / 800);
+      var bytes = Math.floor(block.width / resolution);
       return U.range(bytes).map(function() {
         return drawByte(block.free);
       });
     }
 
     var blocks = ctrl.blocks();
+    var resolution = ctrl.resolution();
     var allBytes = [];
     blocks.forEach(function(block) {
       allBytes = allBytes.concat(drawBlock(block));
@@ -89,6 +111,14 @@ var Main = {
       m('div', [
         m('button', { onclick: ctrl.prevFrame, }, '<<<<'),
         m('button', { onclick: ctrl.nextFrame, }, '>>>>'),
+      ]),
+      m('div', [
+        m('span', 'Resolution: ' + resolution),
+        m('label', '   fixed'),
+        m('input[type=checkbox]', {
+          checked: ctrl.fixedResolution(),
+          onclick: m.withAttr('checked', ctrl.fixedResolution),
+        }),
       ]),
       m('bytes', allBytes),
     ]);
