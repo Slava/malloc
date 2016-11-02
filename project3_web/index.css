@@ -1,0 +1,25 @@
+body {
+  background-image: linear-gradient(to bottom,#d7d7d7 0%,#eeeeee 116px);
+}
+
+.block {
+  display: inline-block;
+}
+
+.byte {
+  outline: 1px solid;
+  display: inline-block;
+  width: 4px;
+  height: 10px;
+}
+
+.byte.red {
+  background-color: red;
+}
+
+.byte.green {
+  background-color: green;
+}
+.root {
+  width: 500px;
+}
