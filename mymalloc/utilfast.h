@@ -11,7 +11,8 @@
 
 // A -- experiment flag
 #ifndef EXP
-#define A 0
+//#define A 0
+#define A 1 // turn on experimental for handin (Slava)
 #else
 #define A 1
 #endif

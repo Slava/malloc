@@ -65,16 +65,18 @@ ifneq ($(CFLAGS),$(OLD_CFLAGS))
 endif
 
 # make all targets specified
-all: $(TARGETS)
+#all: $(TARGETS)
+# default to just mdriver
+all: mdriver
 
 .PHONY: pintool all partial_clean run clean
 
 pintool:
 	$(MAKE) -C pintool
 
-DEFAULT_OBJ := allocator.o
-mdriver: $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS)
-	$(CC) $(PARAMS) $(LDFLAGS) $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
+#DEFAULT_OBJ := allocator.o
+#mdriver: $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS)
+#	$(CC) $(PARAMS) $(LDFLAGS) $(DEFAULT_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
 NAIVE_OBJ := allocator_naive.o
 naive: $(NAIVE_OBJ) $(OBJS) $(MDRIVER_OBJS)
@@ -86,6 +88,9 @@ coalesce: $(COALESCE_OBJ) $(OBJS) $(MDRIVER_OBJS)
 
 FAST_OBJ := allocator_fast.o sampler.o 	listfast.o
 fast: $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) sampler.c
+	$(CC) $(PARAMS) $(LDFLAGS) $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
+
+mdriver: $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) sampler.c
 	$(CC) $(PARAMS) $(LDFLAGS) $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
 # compile objects

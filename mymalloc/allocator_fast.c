@@ -135,7 +135,7 @@ static inline void * my_brk(size_t size) {
 void * my_malloc(size_t size) {
   // we need to be able to store SIZE_T + the current block.
   // in addition, because a list_t needs to have its end marked the size also needs to be LIST_T_SIZE + SIZE_T_SIZE for us to be able to eventually free and reuse the space.
-  add_sample(size);
+  //add_sample(size);
   size_t size_needed = max(size + SIZE_T_SIZE, LIST_T_SIZE + SIZE_T_SIZE);
   size_t aligned_size = ALIGN(size_needed);
 
