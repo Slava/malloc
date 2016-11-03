@@ -26,13 +26,17 @@ var frames = mydump.map(function(obj) {
     return a.position - b.position;
   });
   bs.forEach(function(blockObj) {
+    blocks.push({
+      tag: 'taken',
+      width: blockObj.position - curpos,
+    });
     if (blockObj.bitmap) {
       // header
       blocks.push({
         tag: 'page-header',
-        width: 3 * 8,
+        width: 4 * 8,
       });
-      curpos += 3 * 8;
+      curpos += 4 * 8;
 
       for (var i = 0; i < 64; i++) {
         if (blockObj.bitmap[i] === '1') {
@@ -45,10 +49,6 @@ var frames = mydump.map(function(obj) {
     } else {
       blocks.push({
         tag: 'free',
-        width: blockObj.position - curpos,
-      });
-      blocks.push({
-        tag: 'taken',
         width: blockObj.width,
       });
       curpos = blockObj.position + blockObj.width;
