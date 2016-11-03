@@ -6,7 +6,7 @@
 #include "./allocator_interface.h"
 #include "./memlib.h"
 #include "./utilfast.h"
-#include "./sampler.c"
+#include "./sampler.h"
 
 #define malloc(...) (USE_MY_MALLOC)
 #define free(...) (USE_MY_FREE)
@@ -57,9 +57,11 @@ int my_check() {
   return 0;
 }
 
-void sample_finished(int *bins, int size) {
-  // TODO do something smart;
-  printf("sampling finished %d\n", size);
+static int *bins, *sizes, bins_n;
+void sample_finished(int *bins1, int *sizes1, int size) {
+  bins = bins1;
+  sizes = sizes1;
+  bins_n = size;
 }
 
 int my_init() {
@@ -71,6 +73,7 @@ int my_init() {
     free_lists[i] = NULL;
   }
 
+  bins = sizes = NULL;
   init_samples();
   register_sampling_cb(&sample_finished);
   return 0;
@@ -312,6 +315,7 @@ static inline bool fast_realloc(void *p, size_t new_size) {
 
     return true;
   }
+  printf("\n");
 
   return false;
 }

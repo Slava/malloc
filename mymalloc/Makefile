@@ -26,7 +26,8 @@ HEADERS := \
 	fsecs.h \
 	mdriver.h \
 	memlib.h \
-	validator.h
+	validator.h \
+	sampler.h
 
 # Blank line ends list.
 
@@ -83,7 +84,7 @@ COALESCE_OBJ := allocator_coalesce.o
 coalesce: $(COALESCE_OBJ) $(OBJS) $(MDRIVER_OBJS)
 	$(CC) $(PARAMS) $(LDFLAGS) $(COALESCE_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
-FAST_OBJ := allocator_fast.o
+FAST_OBJ := allocator_fast.o sampler.o 	listfast.o
 fast: $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) sampler.c
 	$(CC) $(PARAMS) $(LDFLAGS) $(FAST_OBJ) $(OBJS) $(MDRIVER_OBJS) -o $@
 
