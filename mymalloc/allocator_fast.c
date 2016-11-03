@@ -89,7 +89,7 @@ typedef struct page_list_t {
 list_t * bin_pages[K];
 
 page_list_t * bins_alloc_page(int bin_id) {
-  dprintf("Allocating a page for bin size %d\n", bins[bin_id]);fflush(stdout);
+  dprintf("Allocating a page for bin size %d\n", bins[bin_id]);
   void *page = big_list_malloc(ALIGN(bins[bin_id] * 64) + ALIGN(sizeof(page_list_t)));
   page_list_t *plist_e = (page_list_t *)page;
   // mark every spot on the map as available
@@ -291,7 +291,7 @@ void *big_list_malloc(size_t size) {
 }
 
 void * my_malloc(size_t size) {
-  dprintf("my malloc %zu\n", size);fflush(stdout);
+  dprintf("my malloc %zu\n", size);
   add_sample(size);
   void *r = bins_malloc(size);
   if (r) {
@@ -436,9 +436,9 @@ void big_list_free(void *p) {
 }
 
 void my_free(void *p) {
-  dprintf("my free %p\n", p);fflush(stdout);
+  dprintf("my free %p\n", p);
   if (!bins_free(p)) {
-    dprintf("didn't find in the bins, we think the size would be %d\n", *(int *)((void *)p - SIZE_T_SIZE));fflush(stdout);
+    dprintf("didn't find in the bins, we think the size would be %d\n", *(int *)((void *)p - SIZE_T_SIZE));
     big_list_free(p);
   }
 }
