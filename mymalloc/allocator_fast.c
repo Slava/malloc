@@ -191,8 +191,8 @@ bool bins_free(void *p) {
   plist_e->bitmap |= (1ULL << idx);
 
   // dealloc page completely
-  if (!plist_e->bitmap) {
-    printf("dealloc page at %p\n", ll);
+  if (~plist_e->bitmap == 0) {
+    dprintf("dealloc page at %p\n", ll);
     list_erase(&bin_pages[the_bin_id], ll);
     big_list_free(ll);
   }
@@ -228,7 +228,6 @@ static inline void * my_brk(size_t size) {
   list_t *cur, *ret;
 
   ret = NULL;
-  if (false)
   for (size_t _idx = 0; _idx < NUM_THRES; ++_idx) {
     if (THRES[_idx] < size) {
       continue;
