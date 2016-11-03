@@ -13,13 +13,26 @@ body {
   height: 10px;
 }
 
-.byte.red {
+.byte.taken {
   background-color: red;
 }
 
-.byte.green {
-  background-color: green;
+.byte.free {
+  background-color: white;
 }
+
+.byte.page-header {
+    background-color: #93bcff;
+}
+
+.byte.page-free {
+    background-color: #bfffd1;
+}
+
+.byte.page-taken {
+    background-color: #ffd4bf;
+}
+
 .root {
-  width: 500px;
+  width: 1000px;
 }

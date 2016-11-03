@@ -522,6 +522,7 @@ void * my_heap_hi() {
   return mem_heap_hi();
 }
 
+static char buffer[70];
 void my_dump_state(char *s) {
   FILE *fout = fopen("dump.out", "a");
   fprintf(fout, "{\n");
@@ -536,6 +537,26 @@ void my_dump_state(char *s) {
     }
   }
   fprintf(fout, "],\n");
+
+  fprintf(fout, "bins: [\n");
+  for (int bin_id = 0; bin_id < bins_n; bin_id++) {
+    fprintf(fout, "{\n");
+    fprintf(fout, "chunk_size: \"%d\",\n", bins[bin_id]);
+    fprintf(fout, "allocated_pages: [\n");
+    for (list_t *l = bin_pages[bin_id]; l != NULL; l = l->next) {
+      page_list_t *pl = (page_list_t *)l;
+      for (int i = 0; i < 64; i++) {
+        buffer[i] = (pl->bitmap & (1ULL << i)) ? '1' : '0';
+      }
+      buffer[64] = 0;
+
+      fprintf(fout, "{ position: %zu, bitmap: \"%s\" },\n", (size_t)((void *)pl - heap_lo), buffer);
+    }
+    fprintf(fout, "],\n");
+    fprintf(fout, "},\n");
+  }
+  fprintf(fout, "],\n");
+
   fprintf(fout, "orig: \"%s\"", s);
   fprintf(fout, "},\n");
   fclose(fout);

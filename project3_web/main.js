@@ -1,29 +1,62 @@
 var mydump = dump;
-//var full = false;
 var full = true;
+//full = false;
 if (!full) {
   mydump = mydump.slice(0, 10);
 }
 var frames = mydump.map(function(obj) {
   var blocks = [];
   var curpos = 0;
-  obj.frees.sort(function(a, b) {
+
+  var bs = [];
+  bs = obj.frees;
+
+  obj.bins.forEach(function (bin) {
+    var chunk_size = bin.chunk_size;
+    bin.allocated_pages.forEach(function (page) {
+      bs.push({
+        position: page.position,
+        chunk_size: chunk_size,
+        bitmap: page.bitmap,
+      });
+    });
+  });
+
+  bs.sort(function(a, b) {
     return a.position - b.position;
   });
-  obj.frees.forEach(function(blockObj) {
-    blocks.push({
-      free: false,
-      width: blockObj.position - curpos,
-    });
-    blocks.push({
-      free: true,
-      width: blockObj.width,
-    });
-    curpos = blockObj.position + blockObj.width;
+  bs.forEach(function(blockObj) {
+    if (blockObj.bitmap) {
+      // header
+      blocks.push({
+        tag: 'page-header',
+        width: 3 * 8,
+      });
+      curpos += 3 * 8;
+
+      for (var i = 0; i < 64; i++) {
+        if (blockObj.bitmap[i] === '1') {
+          blocks.push({ tag: 'page-free', width: blockObj.chunk_size });
+        } else {
+          blocks.push({ tag: 'page-taken', width: blockObj.chunk_size });
+        }
+      }
+      curpos += 64 * blockObj.chunk_size;
+    } else {
+      blocks.push({
+        tag: 'free',
+        width: blockObj.position - curpos,
+      });
+      blocks.push({
+        tag: 'taken',
+        width: blockObj.width,
+      });
+      curpos = blockObj.position + blockObj.width;
+    }
   });
 
   blocks.push({
-    free: false,
+    tag: 'taken',
     width: obj.total_width - curpos,
   });
 
@@ -46,6 +79,7 @@ var Main = {
     var fixedResolution = m.prop(false);
     var frame = m.prop(0);
     function computeResolution(blocks) {
+      return 2048 * 4;
       var totalWidth = 0;
       blocks.forEach(function(block) {
         totalWidth += block.width;
@@ -108,16 +142,16 @@ var Main = {
   },
 
   view: function(ctrl) {
-    function drawByte(free) {
+    function drawByte(tag) {
       return m('.byte', {
-        className: free ? 'green' : 'red',
+        className: tag
       });
     }
 
     function drawBlock(block) {
       var bytes = Math.ceil(block.width / resolution);
       return U.range(bytes).map(function() {
-        return drawByte(block.free);
+        return drawByte(block.tag);
       });
     }
 
