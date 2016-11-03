@@ -16,6 +16,14 @@
 #define NUM_FREE_LISTS 10
 #endif
 
+
+#define PAGE_ELEMENTS 64
+#if (PAGE_ELEMENTS==64)
+#define FULL_MASK (~0ULL)
+#else
+#define FULL_MASK ((1ULL<<(PAGE_ELEMENTS)) - 1)
+#endif
+
 list_t *free_lists[NUM_FREE_LISTS];
 
 const int NUM_THRES = 5;
@@ -90,10 +98,10 @@ list_t * bin_pages[K];
 
 page_list_t * bins_alloc_page(int bin_id) {
   dprintf("Allocating a page for bin size %d\n", bins[bin_id]);
-  void *page = big_list_malloc(ALIGN(bins[bin_id] * 64) + ALIGN(sizeof(page_list_t)));
+  void *page = big_list_malloc(ALIGN(bins[bin_id] * PAGE_ELEMENTS) + ALIGN(sizeof(page_list_t)));
   page_list_t *plist_e = (page_list_t *)page;
   // mark every spot on the map as available
-  plist_e->bitmap = ~0ULL;
+  plist_e->bitmap = FULL_MASK;
 
   list_t *list_e = (list_t*)page;
   list_append(&bin_pages[bin_id], list_e);
@@ -129,10 +137,11 @@ void * bins_alloc_to_a_page(int bin_id) {
   }
 
   int idx = find_lowest_bit(good_page->bitmap);
+  assert(0 <= idx && idx < PAGE_ELEMENTS);
   assert(good_page->bitmap & (1ULL << idx));
   void *page = (void *)good_page + ALIGN(sizeof(page_list_t));
   void *location = page + bins[bin_id] * idx;
-  assert(page <= location && location < page + 64 * bins[bin_id]);
+  assert(page <= location && location < page + PAGE_ELEMENTS * bins[bin_id]);
 
   good_page->bitmap &= ~(1ULL << idx);
   return location;
@@ -170,7 +179,7 @@ bool bins_free(void *p) {
     list_t *l = bin_pages[bin_id];
     while (l) {
       void *start = (void *)l + ALIGN(sizeof(page_list_t));
-      void *end = start + bins[bin_id] * 64;
+      void *end = start + bins[bin_id] * PAGE_ELEMENTS;
       if (start <= p && p < end) {
         dprintf("found between %p and %p: %p (size %d)\n", start, end, p, bins[bin_id]);
         ll = l;
@@ -191,7 +200,7 @@ bool bins_free(void *p) {
   plist_e->bitmap |= (1ULL << idx);
 
   // dealloc page completely
-  if (~plist_e->bitmap == 0) {
+  if (plist_e->bitmap == FULL_MASK) {
     dprintf("dealloc page at %p\n", ll);
     list_erase(&bin_pages[the_bin_id], ll);
     big_list_free(ll);
@@ -545,10 +554,10 @@ void my_dump_state(char *s) {
     fprintf(fout, "allocated_pages: [\n");
     for (list_t *l = bin_pages[bin_id]; l != NULL; l = l->next) {
       page_list_t *pl = (page_list_t *)l;
-      for (int i = 0; i < 64; i++) {
+      for (int i = 0; i < PAGE_ELEMENTS; i++) {
         buffer[i] = (pl->bitmap & (1ULL << i)) ? '1' : '0';
       }
-      buffer[64] = 0;
+      buffer[PAGE_ELEMENTS] = 0;
 
       fprintf(fout, "{ position: %zu, bitmap: \"%s\" },\n", (size_t)((void *)pl - heap_lo), buffer);
     }
