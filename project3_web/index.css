@@ -9,8 +9,8 @@ body {
 .byte {
   outline: 1px solid;
   display: inline-block;
-  width: 4px;
-  height: 10px;
+  width: 8px;
+  height: 18px;
 }
 
 .byte.taken {
@@ -33,6 +33,10 @@ body {
     background-color: #ffd4bf;
 }
 
-.root {
+.bytes {
   width: 1000px;
+}
+.controls {
+    float: right;
+    width: 15em;
 }

@@ -79,7 +79,7 @@ var Main = {
     var fixedResolution = m.prop(false);
     var frame = m.prop(0);
     function computeResolution(blocks) {
-      return 2048 * 4;
+      return 256;
       var totalWidth = 0;
       blocks.forEach(function(block) {
         totalWidth += block.width;
@@ -172,46 +172,48 @@ var Main = {
       onkeyup: ctrl.keyboard.up,
       onkeydown: ctrl.keyboard.down,
     }, [
-      m('select[size=20]',{
-        selectedIndex: ctrl.frame(),
-        onchange: function() {
-          ctrl.frame(this.selectedIndex);
-        },
-        //onchange: m.withAttr('selectedIndex', ctrl.frame),
-      }, frames.map(function(obj, i) {
-        return m('option', {
-          onclick: function() { ctrl.frame(i); }
-        } , obj.orig);
-      })),
+      m('div.controls', [
+        m('select[size=20]',{
+          selectedIndex: ctrl.frame(),
+          onchange: function() {
+            ctrl.frame(this.selectedIndex);
+          },
+          //onchange: m.withAttr('selectedIndex', ctrl.frame),
+        }, frames.map(function(obj, i) {
+          return m('option', {
+            onclick: function() { ctrl.frame(i); }
+          } , obj.orig);
+        })),
 
-      m('select[size=20]',{
-        selectedIndex: ctrl.jumpframe(),
-        onchange: function() {
-          ctrl.jumpframe(this.selectedIndex);
-        },
-        //onchange: m.withAttr('selectedIndex', ctrl.frame),
-      }, jumpframes.map(function(i, j) {
-        return m('option', {
-          onclick: function() { ctrl.jumpframe(j); }
-        } , frames[i].orig + '(' + frames[i].total_width + ')');
-      })),
+        m('select[size=20]',{
+          selectedIndex: ctrl.jumpframe(),
+          onchange: function() {
+            ctrl.jumpframe(this.selectedIndex);
+          },
+          //onchange: m.withAttr('selectedIndex', ctrl.frame),
+        }, jumpframes.map(function(i, j) {
+          return m('option', {
+            onclick: function() { ctrl.jumpframe(j); }
+          } , frames[i].orig + '(' + frames[i].total_width + ')');
+        })),
 
-      m('div', [
-        m('button', { onclick: ctrl.prevFrame, }, '<<<<'),
-        m('button', { onclick: ctrl.nextFrame, }, '>>>>'),
+        m('div', [
+          m('button', { onclick: ctrl.prevFrame, }, '<<<<'),
+          m('button', { onclick: ctrl.nextFrame, }, '>>>>'),
+        ]),
+        m('div', [
+          m('span', 'Resolution: ' + resolution),
+          m('label', '   fixed'),
+          m('input[type=checkbox]', {
+            checked: ctrl.fixedResolution(),
+            onclick: m.withAttr('checked', ctrl.fixedResolution),
+          }),
+        ]),
+        m('div', [
+          m('span', 'Total width: ' + frames[ctrl.frame()].total_width),
+        ]),
       ]),
-      m('div', [
-        m('span', 'Resolution: ' + resolution),
-        m('label', '   fixed'),
-        m('input[type=checkbox]', {
-          checked: ctrl.fixedResolution(),
-          onclick: m.withAttr('checked', ctrl.fixedResolution),
-        }),
-      ]),
-      m('div', [
-        m('span', 'Total width: ' + frames[ctrl.frame()].total_width),
-      ]),
-      m('bytes', allBytes),
+      m('.bytes', [m('bytes', allBytes)]),
     ]);
   },
 }
