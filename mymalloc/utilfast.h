@@ -21,13 +21,18 @@
 #define ALIGNMENT 8
 #endif
 
-#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
 
 #define SECRET 0x123456789ABCDEF0
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
+#if (__WORDSIZE == 64 )
+#define IS_ALIGNED(p)  ((((uint64_t)(p)) % ALIGNMENT) == 0)
+#else
+#define IS_ALIGNED(p)  ((((uint32_t)(p)) % ALIGNMENT) == 0)
+#endif
 
 
 typedef struct list_t {

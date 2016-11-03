@@ -2,9 +2,7 @@
 #include "./util.h"
 #include "./sampler.h"
 
-#define SAMPLES_SIZE 1024 // tunable
-#define K 7 // tunable
-#define OUTLIER_CUTOFF 5 // pretty realistic
+#define OUTLIER_CUTOFF 5
 
 #define INF (1<<30)
 

@@ -49,20 +49,159 @@ int my_check() {
   }
 
   if (p != hi) {
-    printf("Bad headers did not end at heap_hi!\n");
-    printf("heap_lo: %p, heap_hi: %p, size: %lu, p: %p\n", lo, hi, size, p);
+    dprintf("Bad headers did not end at heap_hi!\n");
+    dprintf("heap_lo: %p, heap_hi: %p, size: %lu, p: %p\n", lo, hi, size, p);
     return -1;
   }
 
   return 0;
 }
+void *big_list_malloc(size_t size);
+void big_list_free(void *p);
+
+////////////////////////////////////////////////////////////////////////////////
+//   BINS BASED ALOC
+////////////////////////////////////////////////////////////////////////////////
 
 static int *bins, *sizes, bins_n;
 void sample_finished(int *bins1, int *sizes1, int size) {
   bins = bins1;
   sizes = sizes1;
   bins_n = size;
+
+  for (int i = 0; i < bins_n; i++) {
+    bins[i] = ALIGN(bins[i]);
+    dprintf("%d ", bins[i]);
+  }
+  dprintf(": bins\n");
 }
+
+typedef struct page_list_t {
+  // the order of fields here is very carefully chosen to be compatible
+  // with list_t functions, the biggest difference is using the "size"
+  // field as a bitmap.
+  int64_t bitmap;
+  D(size_t id;)
+  struct list_t* next;
+  struct list_t* prev;
+} page_list_t;
+// for each bin have a list of pages
+list_t * bin_pages[K];
+
+page_list_t * bins_alloc_page(int bin_id) {
+  dprintf("Allocating a page for bin size %d\n", bins[bin_id]);fflush(stdout);
+  void *page = big_list_malloc(ALIGN(bins[bin_id] * 64) + ALIGN(sizeof(page_list_t)));
+  page_list_t *plist_e = (page_list_t *)page;
+  // mark every spot on the map as available
+  plist_e->bitmap = ~0ULL;
+
+  list_t *list_e = (list_t*)page;
+  list_append(&bin_pages[bin_id], list_e);
+  return plist_e;
+}
+
+static const int MultiplyDeBruijnBitPosition[32] = {
+  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+};
+
+int find_lowest_bit(int64_t x) {
+  int lo = (int)x;
+  if (lo) return MultiplyDeBruijnBitPosition[((uint32_t)((lo & -lo) * 0x077CB531U)) >> 27];
+  int hi = (int)(x >> 32);
+  return MultiplyDeBruijnBitPosition[((uint32_t)((hi & -hi) * 0x077CB531U)) >> 27] + 32;
+}
+
+void * bins_alloc_to_a_page(int bin_id) {
+  list_t* p = bin_pages[bin_id];
+  page_list_t *good_page = NULL;
+  while (p) {
+    page_list_t *t = (page_list_t *)p;
+    if (t->bitmap) {
+      good_page = t;
+      break;
+    }
+    p = p->next;
+  }
+
+  if (!good_page) {
+    good_page = bins_alloc_page(bin_id);
+  }
+
+  int idx = find_lowest_bit(good_page->bitmap);
+  assert(good_page->bitmap & (1ULL << idx));
+  void *page = (void *)good_page + ALIGN(sizeof(page_list_t));
+  void *location = page + bins[bin_id] * idx;
+  assert(page <= location && location < page + 64 * bins[bin_id]);
+
+  good_page->bitmap &= ~(1ULL << idx);
+  return location;
+}
+
+int bins_find_bin_id(int size) {
+  int bin_id = -1;
+  for (int i = 0; i < bins_n; i++) {
+    if (bins[i] >= size) {
+      bin_id = i;
+      break;
+    }
+  }
+
+  return bin_id;
+}
+
+void * bins_malloc(int size) {
+  if (bins_n < 1) return NULL;
+
+  int bin_id = bins_find_bin_id(size);
+  if (bin_id == -1) {
+    return NULL;
+  }
+
+  return bins_alloc_to_a_page(bin_id);
+}
+
+// can return false if the memory was not in the lists
+bool bins_free(void *p) {
+  list_t *ll = NULL;
+  int the_bin_id;
+
+  for (int bin_id = 0; !ll && bin_id < bins_n; bin_id++) {
+    list_t *l = bin_pages[bin_id];
+    while (l) {
+      void *start = (void *)l + ALIGN(sizeof(page_list_t));
+      void *end = start + bins[bin_id] * 64;
+      if (start <= p && p < end) {
+        dprintf("found between %p and %p: %p (size %d)\n", start, end, p, bins[bin_id]);
+        ll = l;
+        the_bin_id = bin_id;
+        break;
+      }
+      l = l->next;
+    }
+  }
+
+  if (!ll) return false;
+
+  void *start = (void *)ll + ALIGN(sizeof(page_list_t));
+  page_list_t *plist_e = (page_list_t *)ll;
+  int idx = (p - start) / bins[the_bin_id];
+  assert((p - start) % bins[the_bin_id] == 0);
+  assert(!(plist_e->bitmap & (1ULL << idx)));
+  plist_e->bitmap |= (1ULL << idx);
+
+  // dealloc page completely
+  if (!plist_e->bitmap) {
+    printf("dealloc page at %p\n", ll);
+    list_erase(&bin_pages[the_bin_id], ll);
+    big_list_free(ll);
+  }
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 int my_init() {
   heap_lo = mem_heap_lo();
@@ -73,7 +212,12 @@ int my_init() {
     free_lists[i] = NULL;
   }
 
-  bins = sizes = NULL;
+  assert(sizeof(list_t) == sizeof(page_list_t));
+  for (int i = 0; i < K; i++) {
+    bin_pages[i] = NULL;
+  }
+
+  bins = sizes = NULL; bins_n = 0;
   init_samples();
   register_sampling_cb(&sample_finished);
   return 0;
@@ -84,7 +228,7 @@ static inline void * my_brk(size_t size) {
   list_t *cur, *ret;
 
   ret = NULL;
-  if (size != 456)
+  if (false)
   for (size_t _idx = 0; _idx < NUM_THRES; ++_idx) {
     if (THRES[_idx] < size) {
       continue;
@@ -132,10 +276,9 @@ static inline void * my_brk(size_t size) {
   return p;
 }
 
-void * my_malloc(size_t size) {
+void *big_list_malloc(size_t size) {
   // we need to be able to store SIZE_T + the current block.
   // in addition, because a list_t needs to have its end marked the size also needs to be LIST_T_SIZE + SIZE_T_SIZE for us to be able to eventually free and reuse the space.
-  //add_sample(size);
   size_t size_needed = max(size + SIZE_T_SIZE, LIST_T_SIZE + SIZE_T_SIZE);
   size_t aligned_size = ALIGN(size_needed);
 
@@ -145,6 +288,21 @@ void * my_malloc(size_t size) {
   } else {
     return p + SIZE_T_SIZE;
   }
+}
+
+void * my_malloc(size_t size) {
+  dprintf("my malloc %zu\n", size);fflush(stdout);
+  add_sample(size);
+  void *r = bins_malloc(size);
+  if (r) {
+    dprintf("alloced with binned %p %zu\n", r, size);
+    assert(IS_ALIGNED(r));
+    return r;
+  }
+  r = big_list_malloc(size);
+  assert(IS_ALIGNED(r));
+  dprintf("alloced with big list %p %zu\n", r, size);
+  return r;
 }
 
 static inline bool in_free_list(list_t *p) {
@@ -253,7 +411,7 @@ static inline bool coalesce_forward(list_t *p_node) {
 }
 
 // free - Freeing a block does nothing.
-void my_free(void *p) {
+void big_list_free(void *p) {
   dprintf("\nFREE\n");
   p -= SIZE_T_SIZE;
   size_t size = *(size_t *)p;
@@ -275,6 +433,14 @@ void my_free(void *p) {
   dprintf("unsuccessful coalesce_back\n");
   mark_end(p_node);
   list_append(&(free_lists[get_bkt_idx(p_node)]), p_node);
+}
+
+void my_free(void *p) {
+  dprintf("my free %p\n", p);fflush(stdout);
+  if (!bins_free(p)) {
+    dprintf("didn't find in the bins, we think the size would be %d\n", *(int *)((void *)p - SIZE_T_SIZE));fflush(stdout);
+    big_list_free(p);
+  }
 }
 
 static inline bool fast_realloc(void *p, size_t new_size) {
@@ -315,7 +481,7 @@ static inline bool fast_realloc(void *p, size_t new_size) {
 
     return true;
   }
-  printf("\n");
+  dprintf("\n");
 
   return false;
 }
