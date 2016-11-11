@@ -247,13 +247,9 @@ static inline void * my_brk(size_t size) {
         if (cur->size >= size) {
           if (!ret || cur->size < ret->size) {
             ret = cur;
-            break;
           }
         }
         cur = cur->next;
-      }
-      if (ret) {
-        break;
       }
     }
     if (ret) break;
