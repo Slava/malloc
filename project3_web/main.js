@@ -9,7 +9,7 @@ var frames = mydump.map(function(obj) {
   var curpos = 0;
 
   var bs = [];
-  bs = obj.frees;
+  bs = obj.frees.slice(0);
 
   obj.bins.forEach(function (bin) {
     var chunk_size = bin.chunk_size;
@@ -30,6 +30,7 @@ var frames = mydump.map(function(obj) {
       tag: 'taken',
       width: blockObj.position - curpos,
     });
+    curpos = blockObj.position;
     if (blockObj.bitmap) {
       // header
       blocks.push({
@@ -40,9 +41,9 @@ var frames = mydump.map(function(obj) {
 
       for (var i = 0; i < 64; i++) {
         if (blockObj.bitmap[i] === '1') {
-          blocks.push({ tag: 'page-free', width: blockObj.chunk_size });
+          blocks.push({ tag: 'page-free', width: +blockObj.chunk_size });
         } else {
-          blocks.push({ tag: 'page-taken', width: blockObj.chunk_size });
+          blocks.push({ tag: 'page-taken', width: +blockObj.chunk_size });
         }
       }
       curpos += 64 * blockObj.chunk_size;
@@ -142,24 +143,40 @@ var Main = {
   },
 
   view: function(ctrl) {
-    function drawByte(tag) {
+    function drawByte(tag, fract) {
+      fract = fract || 1;
+      var stdWidth = 8;
       return m('.byte', {
-        className: tag
-      });
-    }
-
-    function drawBlock(block) {
-      var bytes = Math.ceil(block.width / resolution);
-      return U.range(bytes).map(function() {
-        return drawByte(block.tag);
+        className: tag,
+        style: 'width: ' + (stdWidth * fract) + 'px'
       });
     }
 
     var blocks = ctrl.blocks();
     var resolution = ctrl.resolution();
     var allBytes = [];
+
+    var pos = 0;
     blocks.forEach(function(block) {
-      allBytes = allBytes.concat(drawBlock(block));
+      var width = block.width;
+      var goalPos = pos + width;
+
+      var leftPart = Math.min((resolution - pos % resolution) % resolution, width);
+
+      if (leftPart) {
+        allBytes.push(drawByte(block.tag, leftPart / resolution));
+        pos += leftPart;
+      }
+
+      while (pos < goalPos && pos + resolution <= goalPos) {
+        allBytes.push(drawByte(block.tag));
+        pos += resolution;
+      }
+
+      if (pos !== goalPos) {
+        allBytes.push(drawByte(block.tag, (goalPos - pos) / resolution));
+      }
+      pos = goalPos;
     });
 
     return m('.root[tabindex=1', {

@@ -7,7 +7,6 @@ body {
 }
 
 .byte {
-  outline: 1px solid;
   display: inline-block;
   width: 8px;
   height: 18px;
