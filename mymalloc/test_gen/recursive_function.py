@@ -47,16 +47,17 @@ def rec(depth):
     for i in allocs:
         free(i)
 
-rec(1)
+if __name__ == '__main__':
+    rec(1)
 
-# suggested heap size
-print OBJS_ON_FRAME * BRANCHING_FACTOR ** MAX_DEPTH * 200
-# num of ids
-print obj_counter
-# num of ops
-print len(actions)
-# weight of test, not used
-print 1
+    # suggested heap size
+    print OBJS_ON_FRAME * BRANCHING_FACTOR ** MAX_DEPTH * 200
+    # num of ids
+    print obj_counter
+    # num of ops
+    print len(actions)
+    # weight of test, not used
+    print 1
 
-for action in actions:
-    print ' '.join([str(i) for i in action])
+    for action in actions:
+        print ' '.join([str(i) for i in action])

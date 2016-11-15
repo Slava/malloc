@@ -56,39 +56,40 @@ vector_els = [[] for i in range(NUMBER_OF_VECTORS)]
 def choose_vector():
     return random.randint(0, NUMBER_OF_VECTORS - 1)
 
-for iter in range(ITERATIONS):
-    obj = alloc()
-    vec = choose_vector()
-    if len(vector_els[vec]) == vector_size[vec]:
-            vector_size[vec] = int(vector_size[vec] * VECTOR_EXPAND_CONST)
+if __name__ == '__main__':
+    for iter in range(ITERATIONS):
+        obj = alloc()
+        vec = choose_vector()
+        if len(vector_els[vec]) == vector_size[vec]:
+                vector_size[vec] = int(vector_size[vec] * VECTOR_EXPAND_CONST)
+                realloc(vectors[vec], vector_size[vec] * VECTOR_ELEMENT_SIZE)
+        vector_els[vec].append(obj)
+
+    for iter in range(ITERATIONS // 12):
+        vec = choose_vector()
+        obj = vector_els[vec].pop()
+        free(obj)
+        if len(vector_els[vec]) <= vector_size[vec] // VECTOR_EXPAND_CONST:
+            vector_size[vec] = int(vector_size[vec] // VECTOR_EXPAND_CONST)
             realloc(vectors[vec], vector_size[vec] * VECTOR_ELEMENT_SIZE)
-    vector_els[vec].append(obj)
 
-for iter in range(ITERATIONS // 12):
-    vec = choose_vector()
-    obj = vector_els[vec].pop()
-    free(obj)
-    if len(vector_els[vec]) <= vector_size[vec] // VECTOR_EXPAND_CONST:
-        vector_size[vec] = int(vector_size[vec] // VECTOR_EXPAND_CONST)
-        realloc(vectors[vec], vector_size[vec] * VECTOR_ELEMENT_SIZE)
-
-for iter in range(ITERATIONS // 55):
-    obj = alloc()
-    vec = choose_vector()
-    if len(vector_els[vec]) == vector_size[vec]:
-            vector_size[vec] = int(vector_size[vec] * VECTOR_EXPAND_CONST)
-            realloc(vectors[vec], vector_size[vec] * VECTOR_ELEMENT_SIZE)
-    vector_els[vec].append(obj)
+    for iter in range(ITERATIONS // 55):
+        obj = alloc()
+        vec = choose_vector()
+        if len(vector_els[vec]) == vector_size[vec]:
+                vector_size[vec] = int(vector_size[vec] * VECTOR_EXPAND_CONST)
+                realloc(vectors[vec], vector_size[vec] * VECTOR_ELEMENT_SIZE)
+        vector_els[vec].append(obj)
 
 
-# suggested heap size
-print ITERATIONS * 4 * 200
-# num of ids
-print obj_counter
-# num of ops
-print len(actions)
-# weight of test, not used
-print 1
+    # suggested heap size
+    print ITERATIONS * 4 * 200
+    # num of ids
+    print obj_counter
+    # num of ops
+    print len(actions)
+    # weight of test, not used
+    print 1
 
-for action in actions:
-    print ' '.join([str(i) for i in action])
+    for action in actions:
+        print ' '.join([str(i) for i in action])
