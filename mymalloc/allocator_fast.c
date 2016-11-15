@@ -104,7 +104,7 @@ page_list_t * bins_alloc_page(int bin_id) {
   plist_e->bitmap = FULL_MASK;
 
   list_t *list_e = (list_t*)page;
-  list_append(&bin_pages[bin_id], list_e);
+  list_add(&bin_pages[bin_id], list_e);
   return plist_e;
 }
 
@@ -273,7 +273,7 @@ static inline void * my_brk(size_t size) {
     list_t *rem = slice(ret, size);
     if (rem) {
       *sz -= rem->size;
-      list_append(&(free_lists[get_bkt_idx(rem)]), rem);
+      list_add(&(free_lists[get_bkt_idx(rem)]), rem);
     }
   }
 
@@ -283,8 +283,8 @@ static inline void * my_brk(size_t size) {
 void *big_list_malloc(size_t size) {
   // we need to be able to store SIZE_T + the current block.
   // in addition, because a list_t needs to have its end marked the size also needs to be LIST_T_SIZE + SIZE_T_SIZE for us to be able to eventually free and reuse the space.
-  size_t size_needed = max(size + SIZE_T_SIZE, LIST_T_SIZE + SIZE_T_SIZE);
-  size_t aligned_size = ALIGN(size_needed);
+  size_t size_required = max(size + SIZE_T_SIZE, LIST_T_SIZE + SIZE_T_SIZE);
+  size_t aligned_size = ALIGN(size_required);
 
   void *p = my_brk(aligned_size);
   if (p == (void *)-1) {
@@ -382,7 +382,7 @@ static inline bool coalesce_back(list_t *q_node) {
     list_t *p_node = (list_t*)(p);
     list_erase(&(free_lists[get_bkt_idx(p_node)]), p_node);
     grow(p_node, q_node->size);
-    list_append(&(free_lists[get_bkt_idx(p_node)]), p_node);
+    list_add(&(free_lists[get_bkt_idx(p_node)]), p_node);
     return true;
   } else {
     return false;
@@ -436,7 +436,7 @@ void big_list_free(void *p) {
 
   dprintf("unsuccessful coalesce_back\n");
   mark_end(p_node);
-  list_append(&(free_lists[get_bkt_idx(p_node)]), p_node);
+  list_add(&(free_lists[get_bkt_idx(p_node)]), p_node);
 }
 
 void my_free(void *p) {
@@ -480,7 +480,7 @@ static inline bool fast_realloc(void *p, size_t new_size) {
     list_t *rem = slice(q_node, size);
     if (rem) {
       *p_sz -= rem->size;
-      list_append(&(free_lists[get_bkt_idx(rem)]), rem);
+      list_add(&(free_lists[get_bkt_idx(rem)]), rem);
     }
 
     return true;

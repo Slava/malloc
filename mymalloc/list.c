@@ -47,7 +47,7 @@ D(
     return id_cnt++;
   })
 
-void list_append(list_t **root, list_t *node) {
+void list_add(list_t **root, list_t *node) {
   node->next = *root;
   *root = node;
 }

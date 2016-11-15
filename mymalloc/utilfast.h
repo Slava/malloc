@@ -48,7 +48,7 @@ typedef struct list_t {
 
 void list_print(list_t **root);
 void list_erase(list_t **root, list_t *node);
-void list_append(list_t **root, list_t *node);
+void list_add(list_t **root, list_t *node);
 list_t* mknode(void *p, size_t size);
 list_t * slice(list_t *node, size_t size);
 void grow(list_t *node, size_t size);

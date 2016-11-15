@@ -81,7 +81,7 @@ void * my_brk(size_t size) {
     if (ret->size >= size + LIST_T_SIZE) {
       list_t *node = (list_t *)(p + size);
       node->size = ret->size - size;
-      list_append(&free_list, node);
+      list_add(&free_list, node);
     }
   }
   return p;
@@ -126,7 +126,7 @@ void my_free(void *p) {
   size_t size = *header;
   list_t *node = (list_t *)(header);
   node->size = size;
-  list_append(&free_list, node);
+  list_add(&free_list, node);
 }
 
 // realloc - Implemented simply in terms of malloc and free

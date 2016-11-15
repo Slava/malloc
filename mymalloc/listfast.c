@@ -40,7 +40,7 @@ int nxt_id() {
   return id_cnt++;
 })
 
-void list_append(list_t **root, list_t *node) {
+void list_add(list_t **root, list_t *node) {
   node->prev = NULL;
   node->next = *root;
   if (*root) {
