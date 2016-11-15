@@ -1,3 +1,6 @@
+#ifndef UTIL_H
+#define UTIL_H
+
 #ifdef VERBOSE
 #define D(x) x
 #define dprintf printf
@@ -21,3 +24,5 @@ typedef struct list_t {
 void list_print(list_t **root);
 void list_erase(list_t **root, list_t *node);
 void list_append(list_t **root, list_t *node);
+
+#endif

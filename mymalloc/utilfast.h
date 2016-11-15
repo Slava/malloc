@@ -1,3 +1,6 @@
+#ifndef UTILFAST_H
+#define UTILFAST_H
+
 #ifdef VERBOSE
 #define D(x) x
 #define dprintf printf
@@ -53,3 +56,5 @@ list_t * slice(list_t *node, size_t size);
 void grow(list_t *node, size_t size);
 void mark_end(list_t *p);
 void unmark_end(list_t *p);
+
+#endif
