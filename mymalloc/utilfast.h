@@ -27,8 +27,6 @@
 
 #define SECRET 0x123456789ABCDEF0
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
-#define max(a, b) (((a) > (b)) ? (a) : (b))
-#define min(a, b) (((a) < (b)) ? (a) : (b))
 
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
 #if (__WORDSIZE == 64 )
