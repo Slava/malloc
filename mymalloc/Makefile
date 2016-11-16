@@ -27,7 +27,8 @@ HEADERS := \
 	mdriver.h \
 	memlib.h \
 	validator.h \
-	sampler.h
+	sampler.h \
+	avl.h
 
 # Blank line ends list.
 
