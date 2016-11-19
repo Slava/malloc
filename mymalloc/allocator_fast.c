@@ -113,7 +113,7 @@ page_list_t * bins_alloc_page(int bin_id) {
 
   list_t *list_e = (list_t*)page;
   list_add(&bin_pages[bin_id], list_e);
-  //avl_tree = AVL_INSERT(avl_tree, page);
+  avl_tree = AVL_INSERT(avl_tree, page);
   return plist_e;
 }
 
@@ -180,17 +180,9 @@ void * bins_malloc(int size) {
 }
 
 // can return false if the memory was not in the lists
-static list_t *last_ll;
-int last_bin_id;
 bool bins_free(void *p) {
   list_t *ll = NULL;
   int the_bin_id;
-
-  if (last_ll && (void *)last_ll <= p && p < (void *)last_ll + bins[last_bin_id] * PAGE_ELEMENTS) {
-    ll = last_ll;
-    the_bin_id = last_bin_id;
-    goto skip_search;
-  }
 
   for (int bin_id = 0; !ll && bin_id < bins_n; bin_id++) {
     list_t *l = bin_pages[bin_id];
@@ -207,7 +199,6 @@ bool bins_free(void *p) {
     }
   }
 
- skip_search:
   if (!ll) return false;
 
   void *start = (void *)ll + ALIGN(sizeof(page_list_t));
@@ -221,12 +212,8 @@ bool bins_free(void *p) {
   if (plist_e->bitmap == FULL_MASK) {
     dprintf("dealloc page at %p\n", ll);
     list_erase(&bin_pages[the_bin_id], ll);
-    //avl_tree = AVL_REMOVE(avl_tree, AVL_FIND(avl_tree, (void *)ll));
+    avl_tree = AVL_REMOVE(avl_tree, AVL_FIND(avl_tree, (void *)ll));
     big_list_free(ll);
-    last_ll = NULL;
-  } else {
-    last_ll = ll;
-    last_bin_id = the_bin_id;
   }
 
   return true;
@@ -249,7 +236,7 @@ int my_init() {
     bin_pages[i] = NULL;
   }
 
-  bins = sizes = NULL; bins_n = 0; avl_tree = NULL; last_ll = NULL;
+  bins = sizes = NULL; bins_n = 0; avl_tree = NULL;
   init_samples();
   register_sampling_cb(&sample_finished);
   return 0;
